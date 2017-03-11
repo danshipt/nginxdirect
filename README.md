@@ -32,7 +32,7 @@ Arguments:
 
 1. mkdir -p /etc/nginx/hosting/https
 2. cp ./conf.sample/vhost_*.conf /etc/nginx/
-3. Check ./conf.sample/nginx.conf and update yours nginx.conf.
+3. Check ./conf.sample/nginx.conf and update your nginx.conf.
    Include .conf files from ./hosting/ and ./hosting/https.
 4. Put code into /usr/local/nginxdirect/
 5. Put /config/ contents to /usr/local/directadmin/scripts/custom/ 
@@ -51,4 +51,6 @@ python /usr/local/nginxdirect/nginxvhostctl.py -o /etc/nginx/hosting --rebuild $
 if [ $? -gt 0 ]; then
     exit 1
 fi
+
+exit 0
 ```
