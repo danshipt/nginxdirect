@@ -142,7 +142,7 @@ class NginxVhostsConfigManager:
         """
         assert domain_name, "Domain name must be specified"
 
-        ssl_vhosts_drop_dir = os.path.join(self.working_dir, 'https_vhosts')
+        ssl_vhosts_drop_dir = os.path.join(self.working_dir, 'https')
 
         safe_create_path(ssl_vhosts_drop_dir)
 

@@ -26,3 +26,29 @@ Arguments:
   -d DELETE_USER, --delete DELETE_USER
                         Rebuild vhosts using DirectAdmin user configs for the
                         specific user (default: None)
+
+
+## Install
+
+1. mkdir -p /etc/nginx/hosting/https
+2. cp ./conf.sample/vhost_*.conf /etc/nginx/
+3. Check ./conf.sample/nginx.conf and update yours nginx.conf.
+   Include .conf files from ./hosting/ and ./hosting/https.
+4. Put code into /usr/local/nginxdirect/
+5. Put /config/ contents to /usr/local/directadmin/scripts/custom/ 
+
+### Sample usage: rebuild config for user
+
+```bash
+#!/bin/bash
+
+if [ -z $1 ]; then
+    echo "User name?"
+    exit 1
+fi
+
+python /usr/local/nginxdirect/nginxvhostctl.py -o /etc/nginx/hosting --rebuild $1 >>/var/log/nginxdirect.log 2>&1
+if [ $? -gt 0 ]; then
+    exit 1
+fi
+```
