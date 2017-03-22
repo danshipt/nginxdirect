@@ -5,7 +5,7 @@ import re
 from time import sleep
 
 
-class NginxMap:
+class NginxMap(object):
     def __init__(self, map_key, map_variable):
         assert map_key, "Map section key must be specified"
         assert map_variable, "Map section variable must be specified"

@@ -32,8 +32,8 @@ class TestNginxGenConfigCommand(unittest.TestCase):
         self.assertEqual(0, len(conf_manager.map_subdomains.items))
         self.assertEqual(8, len(conf_manager.map_domains.items))
         self.assertEqual(8, len(conf_manager.map_users.items))
-        self.assertTrue(os.path.exists(os.path.join(self.OUT_CONFIG_DIR, 'https_vhosts', 'dskfjhsdfsdfsdf.com.conf')))
-        self.assertTrue(os.path.exists(os.path.join(self.OUT_CONFIG_DIR, 'https_vhosts', 'goandfly.ru.conf')))
+        self.assertTrue(os.path.exists(os.path.join(self.OUT_CONFIG_DIR, 'https', 'dskfjhsdfsdfsdf.com.conf')))
+        self.assertTrue(os.path.exists(os.path.join(self.OUT_CONFIG_DIR, 'https', 'goandfly.ru.conf')))
 
         # test pointers
         self.assertEqual('"goandfly.ru"', conf_manager.map_domains.items['.00shop.ru'])
@@ -53,4 +53,4 @@ class TestNginxGenConfigCommand(unittest.TestCase):
         self.assertEqual(1, len(conf_manager.map_users.items))
         self.assertEqual('"tstphpin"', conf_manager.map_users.items['.dskfjhsdfsdfsdf.com'])
 
-        self.assertTrue(os.path.exists(os.path.join(self.OUT_CONFIG_DIR, 'https_vhosts', 'dskfjhsdfsdfsdf.com.conf')))
+        self.assertTrue(os.path.exists(os.path.join(self.OUT_CONFIG_DIR, 'https', 'dskfjhsdfsdfsdf.com.conf')))

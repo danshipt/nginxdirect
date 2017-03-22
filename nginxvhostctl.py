@@ -44,16 +44,18 @@
 #                         Rebuild vhosts using DirectAdmin user configs for the
 #                         specific user (default: None)
 #
+from __future__ import print_function
+
 import argparse
-import exceptions
 import errno
+import exceptions
+import fcntl
 import os
 import sys
 import traceback
-import fcntl
 
-from nginxlib import NginxMap
 from diradminlib import DirectAdminUserConfig
+from nginxlib import NginxMap
 
 
 def safe_create_path(path, mode=0o711):
@@ -65,29 +67,30 @@ def safe_create_path(path, mode=0o711):
 
     try:
         os.makedirs(path, mode)
-    except OSError, e:
+    except OSError as e:
         if e.errno != errno.EEXIST:
             raise
 
     return True
 
 
-class NginxVhostsConfigManager:
+class NginxVhostsConfigManager(object):
     MAP_USERS_NAME = 'map_users.conf'
     MAP_DOMAINS_NAME = 'map_domains.conf'
     MAP_SUBDOMAINS_NAME = 'map_subdomains.conf'
 
     def __init__(self, working_dir, source_da_dir):
         if not os.path.exists(working_dir):
-            raise Exception("Map files dir must exist: %s" % working_dir)
+            raise Exception("Map files dir must exist: {}".format(working_dir))
 
         if not os.path.exists(source_da_dir):
-            raise Exception("DirectAdmin user config dir must exist: %s" % source_da_dir)
+            raise Exception("DirectAdmin user config dir must exist: {}".format(source_da_dir))
 
         self.working_dir = working_dir
         self.tpl_ssl_vhost_file_name = os.path.join(os.path.dirname(__file__), 'vhost_ssl.conf.tpl')
         if not os.path.exists(self.tpl_ssl_vhost_file_name):
-            raise Exception("Place Nginx vhost template in the correct location: %s" % self.tpl_ssl_vhost_file_name)
+            raise Exception(
+                    "Place Nginx vhost template in the correct location: {}".format(self.tpl_ssl_vhost_file_name))
 
         self.source_da_dir = source_da_dir
         self.map_users = NginxMap('http_host', 'user')
@@ -116,23 +119,24 @@ class NginxVhostsConfigManager:
         assert domain_name, "Domain name must be specified"
         assert user_name, "User name must be specified"
 
-        domain_key = ".%s" % domain_name
-        self.map_users.add_item(domain_key, '"%s"' % user_name)
-        self.map_domains.add_item(domain_key, '"%s"' % domain_name)
+        domain_key = "." + domain_name
+        self.map_users.add_item(domain_key, '"{}"'.format(user_name))
+        self.map_domains.add_item(domain_key, '"{}"'.format(domain_name))
 
     def _add_domain_alias(self, domain_name, domain_alias, user_name):
         assert domain_name, "Domain name must be specified"
         assert domain_alias, "Domain alias must be specified"
         assert user_name, "User name must be specified"
 
-        self.map_users.add_item(".%s" % domain_alias, '"%s"' % user_name)
-        self.map_domains.add_item(".%s" % domain_alias, '"%s"' % domain_name)
+        self.map_users.add_item("." + domain_alias, '"{}"'.format(user_name))
+        self.map_domains.add_item("." + domain_alias, '"{}"'.format(domain_name))
 
     def _add_subdomain(self, domain_name, subdomain):
         assert domain_name, "Domain name must be specified"
         assert subdomain, "Subdomain must be specified"
 
-        self.map_subdomains.add_item(".%s.%s" % (subdomain, domain_name), '"%s"' % subdomain)
+        self.map_subdomains.add_item(".{sub}.{domain}".format(sub=subdomain,
+                                                              domain=domain_name), '"{}"'.format(subdomain))
 
     def _get_https_vhost_config(self, domain_name):
         """
@@ -146,7 +150,7 @@ class NginxVhostsConfigManager:
 
         safe_create_path(ssl_vhosts_drop_dir)
 
-        return os.path.join(ssl_vhosts_drop_dir, "%s.conf" % domain_name)
+        return os.path.join(ssl_vhosts_drop_dir, "{domain}.conf".format(domain=domain_name))
 
     def clean_unresolved_domains(self):
         """
@@ -176,12 +180,12 @@ class NginxVhostsConfigManager:
         """
         assert user_name, "User name must be specified"
 
-        print "Deleting user: %s" % user_name
+        print("Deleting user: {user}".format(user=user_name))
 
         # remove from maps
-        for domain_name in self.map_users.find_keys_by_value('"%s"' % user_name):
+        for domain_name in self.map_users.find_keys_by_value('"{}"'.format(user_name)):
             # remove domains and aliases
-            for domain_domain_name in self.map_domains.find_keys_by_value('"%s"' % domain_name[1:]):
+            for domain_domain_name in self.map_domains.find_keys_by_value('"{}"'.format(domain_name[1:])):
                 self.map_domains.del_item(domain_domain_name)
 
             # remove subdomains
@@ -206,10 +210,10 @@ class NginxVhostsConfigManager:
         """
         assert user_name, "User name must be specified"
 
-        print "Rebuilding user: %s" % user_name
+        print("Rebuilding user: {}".format(user_name))
         user_dir = os.path.join(self.source_da_dir, user_name)
         if not os.path.exists(user_dir):
-            raise Exception("Missing DirectAdmin user dir: %s" % user_dir)
+            raise Exception("Missing DirectAdmin user dir: {}".format(user_dir))
 
         if os.path.isdir(user_dir):
             da_user_config = DirectAdminUserConfig(user_dir)
@@ -232,7 +236,7 @@ class NginxVhostsConfigManager:
 
                     with open(self._get_https_vhost_config(domain.domain_name), 'w') as vhost_file:
                         fcntl.flock(vhost_file, fcntl.LOCK_EX)
-                        for tpl_line in file(self.tpl_ssl_vhost_file_name):
+                        for tpl_line in self.tpl_ssl_vhost_file_name:
                             tpl_line = tpl_line.replace('{sslkey}', key_file)
                             tpl_line = tpl_line.replace('{sslcrt}', cert_file)
                             tpl_line = tpl_line.replace('{user}', user_name)
@@ -246,7 +250,7 @@ class NginxVhostsConfigManager:
         Rebuild Nginx vhost configs for all users from DirectAdmin
         """
         if not os.path.exists(self.source_da_dir):
-            raise Exception("DirectAdmin users config dir must exist: %s" % self.source_da_dir)
+            raise Exception("DirectAdmin users config dir must exist: {}".format(self.source_da_dir))
 
         for user_name in os.listdir(self.source_da_dir):
             self.delete_user(user_name)
@@ -277,17 +281,17 @@ def main():
 
     # validate global args
     if not os.path.exists(args.out_config_dir):
-        raise Exception("Directory must exist: %s" % args.out_config_dir)
+        raise Exception("Directory must exist: {}".format(args.out_config_dir))
 
     if not os.path.exists(args.da_users_config_dir):
-        raise Exception("Directory must exist: %s" % args.da_users_config_dir)
+        raise Exception("Directory must exist: {}".format(args.da_users_config_dir))
 
     # dispatch
     conf_manager = NginxVhostsConfigManager(args.out_config_dir, args.da_users_config_dir)
 
-    print "Updating Nginx vhosts config:"
-    print "    Nginx config dir: %s" % args.out_config_dir
-    print "    DirectAdmin users config dir: %s" % args.da_users_config_dir
+    print("Updating Nginx vhosts config:")
+    print("    Nginx config dir: {}".format(args.out_config_dir))
+    print("    DirectAdmin users config dir: {}".format(args.da_users_config_dir))
 
     conf_manager.clean_unresolved_domains()
 
@@ -304,7 +308,7 @@ def main():
 if __name__ == "__main__":
     try:
         main()
-    except Exception, ex:
+    except Exception as ex:
         traceback.print_exc(file=sys.stdout)
         exit(1)
 

@@ -10,7 +10,7 @@ def uniq_list(list_obj):
     return sorted(ptr_map.keys())
 
 
-class DirectAdminUserDomain:
+class DirectAdminUserDomain(object):
     """
     Configuration of DirectAdmin domain
     """
@@ -99,7 +99,7 @@ class DirectAdminUserDomain:
         return self.config
 
 
-class DirectAdminUserConfig:
+class DirectAdminUserConfig(object):
     """
     DirectAdmin user config
     """
