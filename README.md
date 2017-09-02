@@ -35,7 +35,7 @@ Arguments:
 3. Check ./conf.sample/nginx.conf and update your nginx.conf.
    Include .conf files from ./hosting/ and ./hosting/https.
 4. Put code into /usr/local/nginxdirect/
-5. Put /config/ contents to /usr/local/directadmin/scripts/custom/ 
+5. Put /custom/ contents to /usr/local/directadmin/scripts/custom/ 
 
 ### Sample usage: rebuild config for user
 
