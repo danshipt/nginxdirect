@@ -236,12 +236,13 @@ class NginxVhostsConfigManager(object):
 
                     with open(self._get_https_vhost_config(domain.domain_name), 'w') as vhost_file:
                         fcntl.flock(vhost_file, fcntl.LOCK_EX)
-                        for tpl_line in self.tpl_ssl_vhost_file_name:
-                            tpl_line = tpl_line.replace('{sslkey}', key_file)
-                            tpl_line = tpl_line.replace('{sslcrt}', cert_file)
-                            tpl_line = tpl_line.replace('{user}', user_name)
-                            tpl_line = tpl_line.replace('{domain}', domain.domain_name)
-                            vhost_file.write(tpl_line)
+                        with open(self.tpl_ssl_vhost_file_name, 'r') as tpl_vhost_file:
+                            for tpl_line in tpl_vhost_file:
+                                tpl_line = tpl_line.replace('{sslkey}', key_file)
+                                tpl_line = tpl_line.replace('{sslcrt}', cert_file)
+                                tpl_line = tpl_line.replace('{user}', user_name)
+                                tpl_line = tpl_line.replace('{domain}', domain.domain_name)
+                                vhost_file.write(tpl_line)
 
             self._save()
 

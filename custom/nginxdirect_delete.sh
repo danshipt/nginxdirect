@@ -5,7 +5,7 @@ if [ -z $1 ]; then
     exit 1
 fi
 
-python /usr/local/nginxdirect/nginxvhostctl.py -o /etc/nginx/hosting --delete $1 >>/var/log/nginxdirect.log 2>&1
+python2.7 /usr/local/nginxdirect/nginxvhostctl.py -o /etc/nginx/hosting --delete $1 >>/var/log/nginxdirect.log 2>&1
 if [ $? -gt 0 ]; then
     exit 1
 fi
